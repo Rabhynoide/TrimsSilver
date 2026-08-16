@@ -29,6 +29,9 @@ Ouvrir [http://localhost:3000](http://localhost:3000).
 ## Autres commandes
 
 ```bash
-npm run lint   # ESLint
-npm run build  # build de production
+npm run lint       # ESLint
+npm run build      # build de production
+npm run test       # tests unitaires (Vitest)
+npm run test:watch # tests unitaires en mode watch
+npm run test:e2e   # tests end-to-end (Playwright, démarre le serveur de dev automatiquement)
 ```
