@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthControls } from "./AuthControls";
 
 export function SiteHeader() {
   return (
@@ -27,6 +28,7 @@ export function SiteHeader() {
             Plus échangés
           </Link>
         </nav>
+        <AuthControls />
       </div>
     </header>
   );
