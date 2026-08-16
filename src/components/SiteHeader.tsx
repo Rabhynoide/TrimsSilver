@@ -20,6 +20,12 @@ export function SiteHeader() {
           >
             Vérification des prix
           </Link>
+          <Link
+            href="/top-traded"
+            className="transition-colors hover:text-neutral-100"
+          >
+            Plus échangés
+          </Link>
         </nav>
       </div>
     </header>

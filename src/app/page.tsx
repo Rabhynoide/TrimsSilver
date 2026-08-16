@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FavoritesList } from "@/components/FavoritesList";
 import { ItemSearchInput } from "@/components/ItemSearchInput";
 
 export default function HomePage() {
@@ -23,9 +24,21 @@ export default function HomePage() {
           className="font-medium text-amber-500 hover:text-amber-400"
         >
           Utilisez l&apos;outil de vérification des prix
+        </Link>{" "}
+        ou consultez les{" "}
+        <Link
+          href="/top-traded"
+          className="font-medium text-amber-500 hover:text-amber-400"
+        >
+          objets les plus échangés
         </Link>
         .
       </p>
+
+      <div className="mt-14 w-full">
+        <h2 className="mb-3 text-sm font-medium text-neutral-300">Favoris</h2>
+        <FavoritesList />
+      </div>
 
       <p className="mt-16 text-xs text-neutral-600">
         Données de marché fournies par The Albion Online Data Project.

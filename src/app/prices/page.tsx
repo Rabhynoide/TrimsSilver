@@ -6,14 +6,19 @@ import { ItemIcon } from "@/components/ItemIcon";
 import { ItemSearchInput } from "@/components/ItemSearchInput";
 import { PriceTable } from "@/components/PriceTable";
 import { RegionToggle } from "@/components/RegionToggle";
+import { useLocalStorageState } from "@/lib/hooks/useLocalStorageState";
 import { DEFAULT_REGION } from "@/lib/albion-data/regions";
 import { CITIES, type ItemMeta, type PricePoint, type Region } from "@/types/albion";
 
 const ALL_CITIES = CITIES.filter((city) => city !== "Black Market");
+const SELECTION_STORAGE_KEY = "albion-market:price-check-items";
 
 export default function PricesPage() {
   const [region, setRegion] = useState<Region>(DEFAULT_REGION);
-  const [selectedItems, setSelectedItems] = useState<ItemMeta[]>([]);
+  const [selectedItems, setSelectedItems] = useLocalStorageState<ItemMeta[]>(
+    SELECTION_STORAGE_KEY,
+    []
+  );
   const [selectedCities, setSelectedCities] = useState<string[]>([
     ...ALL_CITIES,
   ]);

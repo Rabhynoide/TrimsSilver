@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { fetchPrices } from "@/lib/albion-data/client";
 import { DEFAULT_REGION, isRegion } from "@/lib/albion-data/regions";
 import { getItemById } from "@/lib/items/search";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { ItemIcon } from "@/components/ItemIcon";
 import { PriceHistoryChart } from "@/components/PriceHistoryChart";
 import { PriceTable } from "@/components/PriceTable";
@@ -59,7 +60,10 @@ export default async function ItemDetailPage({
             </p>
           </div>
         </div>
-        <RegionLinks currentRegion={region} basePath={`/items/${item.id}`} />
+        <div className="flex items-center gap-3">
+          <FavoriteButton item={item} />
+          <RegionLinks currentRegion={region} basePath={`/items/${item.id}`} />
+        </div>
       </div>
 
       <section className="mb-8">
