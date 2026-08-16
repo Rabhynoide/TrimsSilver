@@ -35,7 +35,7 @@ Endpoints concernés côté site :
 
 ### `POST /api/client/v1/sync` — **Implémenté**
 
-Synchronise un personnage et ses compétences de vie (récolte/craft — bûcheronnage, minage, tissage, dépeçage, carrière, agriculture, pêche, cuisine, alchimie, forge, etc.).
+Synchronise un personnage et le niveau actuel de ses compétences de vie (récolte/craft — bûcheronnage, minage, tissage, dépeçage, carrière, agriculture, pêche, cuisine, alchimie, forge, etc.), par palier (ex. Adepte, Expert, Maître...).
 
 - **Auth** : `Authorization: Bearer <jeton>` (voir section Authentification ci-dessus). 401 si absent/invalide/révoqué.
 - **Corps** (validé par zod, voir `src/lib/client-sync/schemas.ts`) :
@@ -43,14 +43,14 @@ Synchronise un personnage et ses compétences de vie (récolte/craft — bûcher
   {
     "character": { "name": "NomDuPersonnage" },
     "skills": [
-      { "key": "GATHERING_WOOD", "fame": 123456 },
-      { "key": "GATHERING_ORE", "fame": 98765 }
+      { "key": "GATHER_ORE_T4", "level": 51 },
+      { "key": "CRAFT_REFINE_ORE_T4", "level": 45 }
     ]
   }
   ```
   - `character.name` : 1 à 64 caractères.
-  - `skills` : 0 à 200 entrées. `key` est une chaîne libre (pas d'enum figé côté site — le mapping exact "quel code Photon = quelle compétence" n'est pas encore fait, voir TrimsSilver-client#2) ; `fame` un entier ≥ 0.
-- **Comportement** : upsert. Le personnage est créé s'il n'existe pas (rattaché au compte propriétaire du jeton) ; les noms de personnage sont uniques globalement (comme dans le jeu), donc si `character.name` appartient déjà à un autre compte, la requête échoue en 409. Chaque compétence est upsertée par `(characterId, skillKey)` — la valeur de `fame` est simplement remplacée, pas de fusion/max.
+  - `skills` : 0 à 200 entrées. `key` est une chaîne libre — c'est l'id d'achievement tel qu'il apparaît dans `achievements.xml` (ao-bin-dumps), pas un enum figé côté site, ce catalogue étant large et évoluant avec les patchs du jeu. `level` un entier entre 0 et 120 : le niveau actuel dans ce palier, pas la fame cumulée (voir Journal des changements pour le raisonnement).
+- **Comportement** : upsert. Le personnage est créé s'il n'existe pas (rattaché au compte propriétaire du jeton) ; les noms de personnage sont uniques globalement (comme dans le jeu), donc si `character.name` appartient déjà à un autre compte, la requête échoue en 409. Chaque compétence est upsertée par `(characterId, skillKey)` — la valeur de `level` est simplement remplacée, pas de fusion/max.
 - **Réponse succès** (200) : `{ "characterId": string, "skillsSynced": number }`.
 - **Erreurs** : 401 (jeton), 400 (`{ error, issues }`, payload invalide), 409 (personnage déjà lié à un autre compte), 5xx (erreur serveur).
 
@@ -71,3 +71,4 @@ _À définir._ Comportement attendu du client en cas de 401/429/5xx (retry, back
 - 2026-08-16 : création du squelette, aucune décision technique prise.
 - 2026-08-16 : authentification implémentée (Better Auth + Discord côté web, jetons personnels hashés pour le client lourd). Base URL/versioning, endpoints d'ingestion et format des payloads restent à définir.
 - 2026-08-16 : premier endpoint d'ingestion réel, `POST /api/client/v1/sync` (compétences de vie). Le mapping event Photon → compétence reste à découvrir côté client (outil de découverte livré dans TrimsSilver-client, voir son README) avant que le client puisse réellement appeler cet endpoint avec de vraies données.
+- 2026-08-16 : le payload envoie le **niveau actuel** par palier (`level`, 0-120) plutôt que la fame cumulée. Le mécanisme trouvé côté client (`FullAchievementInfo`, event Photon 151) donne directement ce niveau par compétence — inutile de faire remonter aussi la fame pour l'objectif visé (calcul du rendement de craft), donc le champ `fame` est retiré du contrat plutôt que gardé en plus.

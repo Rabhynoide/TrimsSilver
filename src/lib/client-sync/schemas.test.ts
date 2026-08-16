@@ -6,8 +6,8 @@ describe("syncPayloadSchema", () => {
     const result = syncPayloadSchema.safeParse({
       character: { name: "Foo" },
       skills: [
-        { key: "GATHERING_WOOD", fame: 12_345 },
-        { key: "GATHERING_ORE", fame: 0 },
+        { key: "GATHER_WOOD_T4", level: 51 },
+        { key: "GATHER_ORE_T4", level: 0 },
       ],
     });
 
@@ -32,19 +32,28 @@ describe("syncPayloadSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects a negative fame value", () => {
+  it("rejects a negative level value", () => {
     const result = syncPayloadSchema.safeParse({
       character: { name: "Foo" },
-      skills: [{ key: "GATHERING_WOOD", fame: -1 }],
+      skills: [{ key: "GATHER_WOOD_T4", level: -1 }],
     });
 
     expect(result.success).toBe(false);
   });
 
-  it("rejects a non-integer fame value", () => {
+  it("rejects a non-integer level value", () => {
     const result = syncPayloadSchema.safeParse({
       character: { name: "Foo" },
-      skills: [{ key: "GATHERING_WOOD", fame: 1.5 }],
+      skills: [{ key: "GATHER_WOOD_T4", level: 1.5 }],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a level value above the cap", () => {
+    const result = syncPayloadSchema.safeParse({
+      character: { name: "Foo" },
+      skills: [{ key: "GATHER_WOOD_T4", level: 121 }],
     });
 
     expect(result.success).toBe(false);
@@ -53,7 +62,7 @@ describe("syncPayloadSchema", () => {
   it("rejects an empty skill key", () => {
     const result = syncPayloadSchema.safeParse({
       character: { name: "Foo" },
-      skills: [{ key: "", fame: 1 }],
+      skills: [{ key: "", level: 1 }],
     });
 
     expect(result.success).toBe(false);
@@ -64,7 +73,7 @@ describe("syncPayloadSchema", () => {
       character: { name: "Foo" },
       skills: Array.from({ length: 201 }, (_, i) => ({
         key: `SKILL_${i}`,
-        fame: 1,
+        level: 1,
       })),
     });
 

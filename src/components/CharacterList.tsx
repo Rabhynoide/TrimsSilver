@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 interface CharacterSkill {
   id: string;
   skillKey: string;
-  fame: number;
+  level: number;
   updatedAt: string;
 }
 
@@ -24,10 +24,6 @@ function formatDate(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
-}
-
-function formatFame(value: number) {
-  return new Intl.NumberFormat("fr-FR").format(value);
 }
 
 export function CharacterList() {
@@ -93,7 +89,7 @@ export function CharacterList() {
                   >
                     <span className="text-neutral-400">{skill.skillKey}</span>
                     <span className="text-neutral-200">
-                      {formatFame(skill.fame)}
+                      {skill.level}
                     </span>
                   </li>
                 ))}

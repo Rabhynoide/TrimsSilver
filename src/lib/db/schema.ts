@@ -1,9 +1,9 @@
 import { relations } from "drizzle-orm";
 import {
-  bigint,
   boolean,
   index,
   pgTable,
+  smallint,
   text,
   timestamp,
   unique,
@@ -104,8 +104,10 @@ export const clientToken = pgTable(
 
 // Synced from the desktop "client lourd" via POST /api/client/v1/sync (see
 // docs/client-api.md). `skillKey` is a free-form string rather than an enum
-// - the exact set of Life Skills the game exposes over the wire isn't fully
-// mapped yet (see TrimsSilver-client#2), so the schema stays open-ended.
+// - it's the achievement id from ao-bin-dumps' achievements.xml (e.g.
+// "GATHER_ORE_T4", "CRAFT_REFINE_ORE_T4"), and that catalogue is large and
+// evolves with game patches, so the schema stays open-ended rather than
+// enumerating it.
 export const character = pgTable(
   "character",
   {
@@ -132,7 +134,7 @@ export const characterSkill = pgTable(
       .notNull()
       .references(() => character.id, { onDelete: "cascade" }),
     skillKey: text("skill_key").notNull(),
-    fame: bigint("fame", { mode: "number" }).notNull(),
+    level: smallint("level").notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const syncSkillSchema = z.object({
   key: z.string().min(1).max(100),
-  fame: z.number().int().nonnegative(),
+  level: z.number().int().min(0).max(120),
 });
 
 export const syncPayloadSchema = z.object({

@@ -15,6 +15,13 @@
       "when": 1786874858118,
       "tag": "0001_high_havok",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786915249396,
+      "tag": "0002_level_not_fame",
+      "breakpoints": true
     }
   ]
 }

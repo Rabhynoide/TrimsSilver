@@ -62,12 +62,12 @@ export async function POST(request: NextRequest) {
           id: randomUUID(),
           characterId,
           skillKey: skill.key,
-          fame: skill.fame,
+          level: skill.level,
         }))
       )
       .onConflictDoUpdate({
         target: [characterSkill.characterId, characterSkill.skillKey],
-        set: { fame: sql`excluded.fame`, updatedAt: new Date() },
+        set: { level: sql`excluded.level`, updatedAt: new Date() },
       });
   }
 
