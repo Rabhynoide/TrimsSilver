@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { CharacterList } from "@/components/CharacterList";
 import { TokenManager } from "@/components/TokenManager";
 
 export default async function AccountPage() {
@@ -34,6 +35,17 @@ export default async function AccountPage() {
           copiez-le immédiatement.
         </p>
         <TokenManager />
+      </section>
+
+      <section className="mt-10">
+        <h2 className="mb-2 text-sm font-medium text-neutral-300">
+          Personnages
+        </h2>
+        <p className="mb-4 text-sm text-neutral-500">
+          Compétences de vie (récolte/craft) remontées par le client lourd,
+          en lecture seule.
+        </p>
+        <CharacterList />
       </section>
     </div>
   );

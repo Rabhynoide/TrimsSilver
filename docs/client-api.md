@@ -1,6 +1,6 @@
 # Contrat d'API — client lourd → TrimsSilver
 
-> **Statut : authentification implémentée, endpoints d'ingestion pas encore.** Ce document est la référence unique du contrat entre le [client lourd](https://github.com/Rabhynoide/TrimsSilver-client) (interception de paquets réseau du jeu) et l'API/DB en ligne de ce repo. À compléter au fur et à mesure des décisions prises sur [TrimsSilver#5](https://github.com/Rabhynoide/TrimsSilver/issues/5) (côté API) et [TrimsSilver-client#1-4](https://github.com/Rabhynoide/TrimsSilver-client/issues) (côté client).
+> **Statut : authentification + premier endpoint d'ingestion (compétences de personnage) implémentés.** Ce document est la référence unique du contrat entre le [client lourd](https://github.com/Rabhynoide/TrimsSilver-client) (interception de paquets réseau du jeu) et l'API/DB en ligne de ce repo. À compléter au fur et à mesure des décisions prises sur [TrimsSilver#5](https://github.com/Rabhynoide/TrimsSilver/issues/5) (côté API) et [TrimsSilver-client#1-4](https://github.com/Rabhynoide/TrimsSilver-client/issues) (côté client).
 >
 > Le client lourd ne doit pas dupliquer ce contrat dans son propre repo : il y renvoie un lien (voir son README).
 
@@ -10,7 +10,7 @@ Ce que le client envoie à l'API, dans quel format, et comment il s'authentifie.
 
 ## Base URL et versioning
 
-_À définir._ Probablement `https://<domaine-du-site>/api/client/v1/...` (sous-espace dédié des routes API existantes, versionné dès le départ puisqu'un client distribué en binaire ne peut pas être mis à jour aussi vite que le site).
+**Implémenté.** `https://<domaine-du-site>/api/client/v1/...` — sous-espace dédié des routes API existantes, versionné dès le départ puisqu'un client distribué en binaire ne peut pas être mis à jour aussi vite que le site.
 
 ## Authentification
 
@@ -33,21 +33,41 @@ Endpoints concernés côté site :
 
 ## Endpoints
 
-_À définir._ Prévoir a minima :
+### `POST /api/client/v1/sync` — **Implémenté**
 
-- `POST /api/client/v1/ingest` (nom provisoire) — soumission de données observées (prix vus en jeu, transactions, etc.)
+Synchronise un personnage et ses compétences de vie (récolte/craft — bûcheronnage, minage, tissage, dépeçage, carrière, agriculture, pêche, cuisine, alchimie, forge, etc.).
 
-Chaque endpoint devra documenter ici : méthode, chemin, en-têtes requis, schéma du corps de requête, réponse de succès, codes d'erreur.
+- **Auth** : `Authorization: Bearer <jeton>` (voir section Authentification ci-dessus). 401 si absent/invalide/révoqué.
+- **Corps** (validé par zod, voir `src/lib/client-sync/schemas.ts`) :
+  ```json
+  {
+    "character": { "name": "NomDuPersonnage" },
+    "skills": [
+      { "key": "GATHERING_WOOD", "fame": 123456 },
+      { "key": "GATHERING_ORE", "fame": 98765 }
+    ]
+  }
+  ```
+  - `character.name` : 1 à 64 caractères.
+  - `skills` : 0 à 200 entrées. `key` est une chaîne libre (pas d'enum figé côté site — le mapping exact "quel code Photon = quelle compétence" n'est pas encore fait, voir TrimsSilver-client#2) ; `fame` un entier ≥ 0.
+- **Comportement** : upsert. Le personnage est créé s'il n'existe pas (rattaché au compte propriétaire du jeton) ; les noms de personnage sont uniques globalement (comme dans le jeu), donc si `character.name` appartient déjà à un autre compte, la requête échoue en 409. Chaque compétence est upsertée par `(characterId, skillKey)` — la valeur de `fame` est simplement remplacée, pas de fusion/max.
+- **Réponse succès** (200) : `{ "characterId": string, "skillsSynced": number }`.
+- **Erreurs** : 401 (jeton), 400 (`{ error, issues }`, payload invalide), 409 (personnage déjà lié à un autre compte), 5xx (erreur serveur).
+
+Le personnage et ses compétences sont visibles en lecture seule sur `/account` (`GET /api/account/characters`, authentifié par session web, pas par jeton — distinct de l'endpoint client).
+
+À prévoir plus tard : d'autres endpoints d'ingestion (ex. prix vus en jeu) suivraient le même schéma d'auth/versioning.
 
 ## Format des payloads
 
-_À définir._ À aligner avec les types déjà utilisés côté site pour les prix/historique (voir `src/types/albion.ts`) plutôt que d'inventer un format parallèle, dans la mesure du possible.
+**Implémenté pour la sync de compétences** (voir ci-dessus). Pour de futurs payloads (ex. prix), s'aligner avec les types déjà utilisés côté site pour les prix/historique (voir `src/types/albion.ts`) plutôt que d'inventer un format parallèle, dans la mesure du possible.
 
 ## Gestion des erreurs et limites
 
-_À définir._ Comportement attendu du client en cas de 401/429/5xx (retry, backoff, mise en file locale).
+_À définir._ Comportement attendu du client en cas de 401/429/5xx (retry, backoff, mise en file locale). Rate limiting par jeton pas encore fait.
 
 ## Journal des changements
 
 - 2026-08-16 : création du squelette, aucune décision technique prise.
 - 2026-08-16 : authentification implémentée (Better Auth + Discord côté web, jetons personnels hashés pour le client lourd). Base URL/versioning, endpoints d'ingestion et format des payloads restent à définir.
+- 2026-08-16 : premier endpoint d'ingestion réel, `POST /api/client/v1/sync` (compétences de vie). Le mapping event Photon → compétence reste à découvrir côté client (outil de découverte livré dans TrimsSilver-client, voir son README) avant que le client puisse réellement appeler cet endpoint avec de vraies données.

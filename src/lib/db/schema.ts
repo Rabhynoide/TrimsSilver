@@ -1,5 +1,13 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  boolean,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -94,16 +102,77 @@ export const clientToken = pgTable(
   (table) => [index("client_token_userId_idx").on(table.userId)]
 );
 
+// Synced from the desktop "client lourd" via POST /api/client/v1/sync (see
+// docs/client-api.md). `skillKey` is a free-form string rather than an enum
+// - the exact set of Life Skills the game exposes over the wire isn't fully
+// mapped yet (see TrimsSilver-client#2), so the schema stays open-ended.
+export const character = pgTable(
+  "character",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: text("name").notNull().unique(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    lastSyncedAt: timestamp("last_synced_at").defaultNow().notNull(),
+  },
+  (table) => [index("character_userId_idx").on(table.userId)]
+);
+
+export const characterSkill = pgTable(
+  "character_skill",
+  {
+    id: text("id").primaryKey(),
+    characterId: text("character_id")
+      .notNull()
+      .references(() => character.id, { onDelete: "cascade" }),
+    skillKey: text("skill_key").notNull(),
+    fame: bigint("fame", { mode: "number" }).notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("character_skill_characterId_idx").on(table.characterId),
+    unique("character_skill_character_skill_unique").on(
+      table.characterId,
+      table.skillKey
+    ),
+  ]
+);
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
   clientTokens: many(clientToken),
+  characters: many(character),
 }));
 
 export const clientTokenRelations = relations(clientToken, ({ one }) => ({
   user: one(user, {
     fields: [clientToken.userId],
     references: [user.id],
+  }),
+}));
+
+export const characterRelations = relations(character, ({ one, many }) => ({
+  user: one(user, {
+    fields: [character.userId],
+    references: [user.id],
+  }),
+  skills: many(characterSkill),
+}));
+
+export const characterSkillRelations = relations(characterSkill, ({ one }) => ({
+  character: one(character, {
+    fields: [characterSkill.characterId],
+    references: [character.id],
   }),
 }));
 
