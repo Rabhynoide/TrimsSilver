@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AlbionMarket
 
-## Getting Started
+Site de suivi du marché pour le jeu [Albion Online](https://albiononline.com/), inspiré de [albionfreemarket.com](https://albionfreemarket.com/). Construit avec Next.js (App Router, TypeScript, Tailwind CSS).
 
-First, run the development server:
+## Fonctionnalités (Phase 1)
+
+- Recherche d'objets avec autocomplete
+- Vérification des prix (`/prices`) : comparaison multi-objets, par ville et par qualité
+- Page détail d'un objet (`/items/[uniqueName]`) : prix actuels + historique (horaire / 6h / journalier)
+- Sélecteur de région (Europe / Amériques / Asie)
+
+Les fonctionnalités à venir (calculateurs de craft, comptes utilisateurs, carte interactive, etc.) sont suivies via les [issues](https://github.com/Rabhynoide/TrimsSilver/issues) et les milestones du dépôt.
+
+## Sources de données
+
+- Prix et historique de marché : [The Albion Online Data Project](https://www.albion-online-data.com/) (API publique communautaire)
+- Métadonnées des objets (noms, tiers) : [ao-bin-dumps](https://github.com/broderickhyman/ao-bin-dumps)
+- Icônes d'objets : service de rendu officiel `render.albiononline.com`
+
+## Démarrer
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrir [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Autres commandes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint   # ESLint
+npm run build  # build de production
+```
